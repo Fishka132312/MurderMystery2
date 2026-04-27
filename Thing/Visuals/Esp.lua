@@ -1,6 +1,8 @@
 local ColorInnocent = Color3.fromRGB(0, 255, 0)
 local ColorSheriff = Color3.fromRGB(0, 0, 255)
 local ColorMurderer = Color3.fromRGB(255, 0, 0)
+local ColorHero = Color3.fromRGB(255, 255, 0)
+local ColorDead = Color3.fromRGB(255, 255, 255)
 
 _G.EspAll = false
 _G.EspSheriff = false
@@ -15,23 +17,26 @@ local CurrentRoundClient = require(ReplicatedStorage:WaitForChild("Modules"):Wai
 local EspFolder = CoreGui:FindFirstChild("ESP_Storage") or Instance.new("Folder", CoreGui)
 EspFolder.Name = "ESP_Storage"
 
-local function GetRoleFromModule(player)
+local function GetPlayerData(player)
     local data = CurrentRoundClient.PlayerData
     if data and data[player.Name] then
-        return data[player.Name].Role
+        return data[player.Name]
     end
     
     for _, v in pairs(data or {}) do
         if v.Name == player.Name or v.Player == player then
-            return v.Role
+            return v
         end
     end
     return nil
 end
 
 local function GetPlayerRole(player)
-    local moduleRole = GetRoleFromModule(player)
-    if moduleRole then return moduleRole end
+    local data = GetPlayerData(player)
+    if data then
+        if data.Dead then return "Dead" end
+        return data.Role
+    end
 
     local char = player.Character
     local bp = player:FindFirstChild("Backpack")
@@ -60,12 +65,18 @@ local function UpdateESP(player)
     local isEnabled = false
     local targetColor = ColorInnocent
 
-    if role == "Murderer" then
+    if role == "Dead" then
+        isEnabled = _G.EspAll
+        targetColor = ColorDead
+    elseif role == "Murderer" then
         isEnabled = _G.EspMurder
         targetColor = ColorMurderer
     elseif role == "Sheriff" then
         isEnabled = _G.EspSheriff
         targetColor = ColorSheriff
+    elseif role == "Hero" then
+        isEnabled = _G.EspSheriff or _G.EspAll
+        targetColor = ColorHero
     else
         isEnabled = _G.EspAll
         targetColor = ColorInnocent
@@ -80,7 +91,7 @@ local function UpdateESP(player)
         highlight.Adornee = character
         highlight.FillColor = targetColor
         highlight.OutlineColor = Color3.new(1, 1, 1)
-        highlight.FillTransparency = 0.5
+        highlight.FillTransparency = (role == "Dead") and 0.8 or 0.5
         highlight.Enabled = true
     else
         if highlight then highlight:Destroy() end
