@@ -48,17 +48,15 @@ local function GetPlayerRole(player)
 end
 
 local function UpdateESP(player)
-    if player == Players.LocalPlayer then return end
     local character = player.Character
+    local highlight = EspFolder:FindFirstChild(player.Name .. "_ESP")
+
     if not character or not character:FindFirstChild("HumanoidRootPart") then 
-        local old = EspFolder:FindFirstChild(player.Name .. "_ESP")
-        if old then old:Destroy() end
+        if highlight then highlight:Destroy() end
         return 
     end
 
     local role = GetPlayerRole(player)
-    local highlight = EspFolder:FindFirstChild(player.Name .. "_ESP")
-
     local isEnabled = false
     local targetColor = ColorInnocent
 
@@ -92,7 +90,16 @@ end
 task.spawn(function()
     while task.wait(0.3) do
         for _, player in pairs(Players:GetPlayers()) do
-            UpdateESP(player)
+            if player ~= Players.LocalPlayer then
+                UpdateESP(player)
+            end
+        end
+        
+        for _, obj in pairs(EspFolder:GetChildren()) do
+            local name = obj.Name:gsub("_ESP", "")
+            if not Players:FindFirstChild(name) then
+                obj:Destroy()
+            end
         end
     end
 end)
