@@ -31,7 +31,7 @@ local function createHighlight(target, uniqueId, color, transparency)
     highlight.FillColor = color
     highlight.OutlineColor = Color3.new(1, 1, 1)
     highlight.FillTransparency = transparency
-    highlight.OutlineTransparency = 0 -- Четкий контур
+    highlight.OutlineTransparency = 1 -- Четкий контур
     highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop -- Видно сквозь стены
     highlight.Parent = Storage
 end
