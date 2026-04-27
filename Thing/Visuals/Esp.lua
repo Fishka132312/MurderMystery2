@@ -1,12 +1,18 @@
-_G.ColorInnocent = Color3.fromRGB(0, 255, 0)
-_G.ColorSheriff = Color3.fromRGB(0, 0, 255)
-_G.ColorMurderer = Color3.fromRGB(255, 0, 0)
-_G.ColorHero = Color3.fromRGB(255, 255, 0)
-_G.ColorDead = Color3.fromRGB(255, 255, 255)
+if _G.EspRunning then
+    _G.EspRunning = false
+    task.wait(0.5)
+end
+_G.EspRunning = true
 
-_G.EspAll = false
-_G.EspSheriff = false
-_G.EspMurder = false
+_G.ColorInnocent = _G.ColorInnocent or Color3.fromRGB(0, 255, 0)
+_G.ColorSheriff = _G.ColorSheriff or Color3.fromRGB(0, 0, 255)
+_G.ColorMurderer = _G.ColorMurderer or Color3.fromRGB(255, 0, 0)
+_G.ColorHero = _G.ColorHero or Color3.fromRGB(255, 255, 0)
+_G.ColorDead = _G.ColorDead or Color3.fromRGB(255, 255, 255)
+
+_G.EspAll = (_G.EspAll ~= nil) and _G.EspAll or false
+_G.EspSheriff = (_G.EspSheriff ~= nil) and _G.EspSheriff or false
+_G.EspMurder = (_G.EspMurder ~= nil) and _G.EspMurder or false
 
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
@@ -14,7 +20,11 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local CurrentRoundClient = require(ReplicatedStorage:WaitForChild("Modules"):WaitForChild("CurrentRoundClient"))
 
-local EspFolder = CoreGui:FindFirstChild("ESP_Storage") or Instance.new("Folder", CoreGui)
+if CoreGui:FindFirstChild("ESP_Storage") then
+    CoreGui.ESP_Storage:Destroy()
+end
+
+local EspFolder = Instance.new("Folder", CoreGui)
 EspFolder.Name = "ESP_Storage"
 
 local function GetPlayerData(player)
@@ -22,7 +32,6 @@ local function GetPlayerData(player)
     if data and data[player.Name] then
         return data[player.Name]
     end
-    
     for _, v in pairs(data or {}) do
         if v.Name == player.Name or v.Player == player then
             return v
@@ -44,11 +53,9 @@ local function GetPlayerRole(player)
     if (char and (char:FindFirstChild("Knife") or char:FindFirstChild("Slasher"))) or (bp and (bp:FindFirstChild("Knife") or bp:FindFirstChild("Slasher"))) then
         return "Murderer"
     end
-    
     if (char and (char:FindFirstChild("Gun") or char:FindFirstChild("Revolver"))) or (bp and (bp:FindFirstChild("Gun") or bp:FindFirstChild("Revolver"))) then
         return "Sheriff"
     end
-    
     return "Innocent"
 end
 
@@ -99,7 +106,7 @@ local function UpdateESP(player)
 end
 
 task.spawn(function()
-    while task.wait(0.3) do
+    while _G.EspRunning do
         for _, player in pairs(Players:GetPlayers()) do
             if player ~= Players.LocalPlayer then
                 UpdateESP(player)
@@ -112,6 +119,7 @@ task.spawn(function()
                 obj:Destroy()
             end
         end
+        task.wait(0.3)
     end
 end)
 
