@@ -9,14 +9,17 @@ _G.ColorSheriff = _G.ColorSheriff or Color3.fromRGB(0, 0, 255)
 _G.ColorMurderer = _G.ColorMurderer or Color3.fromRGB(255, 0, 0)
 _G.ColorHero = _G.ColorHero or Color3.fromRGB(255, 255, 0)
 _G.ColorDead = _G.ColorDead or Color3.fromRGB(255, 255, 255)
+_G.ColorCoins = _G.ColorCoins or Color3.fromRGB(255, 215, 0)
 
 _G.EspAll = (_G.EspAll ~= nil) and _G.EspAll or false
 _G.EspSheriff = (_G.EspSheriff ~= nil) and _G.EspSheriff or false
 _G.EspMurder = (_G.EspMurder ~= nil) and _G.EspMurder or false
+_G.EspCoins = (_G.EspCoins ~= nil) and _G.EspCoins or false
 
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local CollectionService = game:GetService("CollectionService")
 
 local CurrentRoundClient = require(ReplicatedStorage:WaitForChild("Modules"):WaitForChild("CurrentRoundClient"))
 
@@ -59,7 +62,7 @@ local function GetPlayerRole(player)
     return "Innocent"
 end
 
-local function UpdateESP(player)
+local function UpdatePlayerESP(player)
     local character = player.Character
     local highlight = EspFolder:FindFirstChild(player.Name .. "_ESP")
 
@@ -105,18 +108,44 @@ local function UpdateESP(player)
     end
 end
 
+local function UpdateCoinESP()
+    for _, coin in pairs(CollectionService:GetTagged("CoinVisual")) do
+        local highlight = coin:FindFirstChild("Coin_ESP")
+        local isCollected = coin:GetAttribute("Collected") or coin:GetAttribute("Delete")
+        
+        if _G.EspCoins and not isCollected then
+            if not highlight then
+                highlight = Instance.new("Highlight")
+                highlight.Name = "Coin_ESP"
+                highlight.Parent = coin
+            end
+            highlight.Adornee = coin
+            highlight.FillColor = _G.ColorCoins
+            highlight.OutlineColor = Color3.new(1, 1, 1)
+            highlight.FillTransparency = 0.4
+            highlight.Enabled = true
+        else
+            if highlight then highlight:Destroy() end
+        end
+    end
+end
+
 task.spawn(function()
     while _G.EspRunning do
         for _, player in pairs(Players:GetPlayers()) do
             if player ~= Players.LocalPlayer then
-                UpdateESP(player)
+                UpdatePlayerESP(player)
             end
         end
+
+        UpdateCoinESP()
         
         for _, obj in pairs(EspFolder:GetChildren()) do
-            local name = obj.Name:gsub("_ESP", "")
-            if not Players:FindFirstChild(name) then
-                obj:Destroy()
+            if not obj.Name:find("Coin") then
+                local name = obj.Name:gsub("_ESP", "")
+                if not Players:FindFirstChild(name) then
+                    obj:Destroy()
+                end
             end
         end
         task.wait(0.3)
