@@ -5,73 +5,81 @@ if _G.CoinEspRunning then
 end
 _G.CoinEspRunning = true
 
--- 2. Настройки (связываем с твоим меню)
+-- 2. Настройки (связанные с твоим меню)
 _G.EspCoins = (_G.EspCoins ~= nil) and _G.EspCoins or false
 _G.ColorCoins = _G.ColorCoins or Color3.fromRGB(255, 215, 0)
+_G.CoinTransparency = _G.CoinTransparency or 0.3 -- Добавил прозрачность на всякий случай
 
 local CollectionService = game:GetService("CollectionService")
-local ESP_NAME = "CoinESP_Marker"
+local CoreGui = game:GetService("CoreGui")
 
--- 3. Функция создания маркера (твоя рабочая логика)
-local function createESP(object)
-    if not object or object:FindFirstChild(ESP_NAME) then return end
-    
-    local part = object:IsA("BasePart") and object or object:FindFirstChildWhichIsA("BasePart")
-    if not part then return end
+local ESP_STORAGE_NAME = "Coin_Highlights_Storage"
+local Storage = CoreGui:FindFirstChild(ESP_STORAGE_NAME) or Instance.new("Folder", CoreGui)
+Storage.Name = ESP_STORAGE_NAME
 
-    local billboard = Instance.new("BillboardGui")
-    billboard.Name = ESP_NAME
-    billboard.AlwaysOnTop = true
-    billboard.Size = UDim2.new(0, 50, 0, 50)
-    billboard.Adornee = part
-    billboard.Parent = part
+-- Функция создания обводки (Highlight) на конкретной детали
+local function createHighlight(coinPart, uniqueId)
+    if not coinPart or not coinPart:IsA("BasePart") then return end
+    if Storage:FindFirstChild(uniqueId) then return end
 
-    local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(0.5, 0, 0.5, 0)
-    frame.AnchorPoint = Vector2.new(0.5, 0.5)
-    frame.Position = UDim2.new(0.5, 0, 0.5, 0)
-    frame.BackgroundColor3 = _G.ColorCoins -- Используем цвет из меню
-    frame.BackgroundTransparency = 0.3
-    frame.Parent = billboard
-
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(1, 0)
-    corner.Parent = frame
+    local highlight = Instance.new("Highlight")
+    highlight.Name = uniqueId
+    highlight.Adornee = coinPart -- Обводит ТОЛЬКО MainCoin
+    highlight.FillColor = _G.ColorCoins
+    highlight.OutlineColor = Color3.new(1, 1, 1) -- Белый контур
+    highlight.FillTransparency = _G.CoinTransparency
+    highlight.OutlineTransparency = 0 -- Контур четкий
+    highlight.Parent = Storage
 end
 
 -- 4. Основной цикл
 task.spawn(function()
     while _G.CoinEspRunning do
-        -- Если кнопка в меню ВКЛЮЧЕНА
         if _G.EspCoins then
-            for _, coin in pairs(CollectionService:GetTagged("CoinVisual")) do
-                local isCollected = coin:GetAttribute("Collected") or coin:GetAttribute("Delete")
+            -- Ищем все объекты с тегом "CoinVisual"
+            local coinContainers = CollectionService:GetTagged("CoinVisual")
+            
+            for _, container in pairs(coinContainers) do
+                -- Проверка: не собрана ли монета (по твоим атрибутам)
+                local isCollected = container:GetAttribute("Collected") or container:GetAttribute("Delete")
                 
-                if not isCollected then
-                    createESP(coin)
-                    -- Обновляем цвет существующего маркера (если поменяли в Colorpicker)
-                    local existing = coin:FindFirstChild(ESP_NAME)
-                    if existing and existing:FindFirstChild("Frame") then
-                        existing.Frame.BackgroundColor3 = _G.ColorCoins
+                -- Находим деталь MainCoin внутри контейнера (как на твоем скриншоте)
+                local mainCoinPart = container:FindFirstChild("MainCoin")
+                
+                if mainCoinPart and not isCollected then
+                    -- Используем ID контейнера, чтобы подсветка не дублировалась
+                    local uniqueId = container:GetDebugId(10)
+                    local existing = Storage:FindFirstChild(uniqueId)
+
+                    if not existing then
+                        createHighlight(mainCoinPart, uniqueId)
+                    else
+                        -- Обновление настроек в реальном времени
+                        existing.FillColor = _G.ColorCoins
+                        existing.FillTransparency = _G.CoinTransparency
+                        existing.Adornee = mainCoinPart -- На всякий случай обновляем Adornee
                     end
                 else
-                    -- Если монета собрана — удаляем
-                    if coin:FindFirstChild(ESP_NAME) then
-                        coin[ESP_NAME]:Destroy()
-                    end
+                    -- Если монета собрана или MainCoin нет — удаляем подсветку
+                    local uniqueId = container:GetDebugId(10)
+                    local existing = Storage:FindFirstChild(uniqueId)
+                    if existing then existing:Destroy() end
+                end
+            end
+            
+            -- Очистка "призрачных" подсветок
+            for _, hl in pairs(Storage:GetChildren()) do
+                if not hl.Adornee or not hl.Adornee.Parent then
+                    hl:Destroy()
                 end
             end
         else
-            -- Если кнопка в меню ВЫКЛЮЧЕНА — удаляем все маркеры
-            for _, coin in pairs(CollectionService:GetTagged("CoinVisual")) do
-                if coin:FindFirstChild(ESP_NAME) then
-                    coin[ESP_NAME]:Destroy()
-                end
-            end
+            -- Если ESP выключен в меню — удаляем всё
+            Storage:ClearAllChildren()
         end
         
-        task.wait(1) -- Проверка каждую секунду
+        task.wait(0.5) -- Оптимальная частота проверки
     end
 end)
 
-print("Coin ESP Loaded and Synced!")
+print("Coin Outline ESP (Targeted MainCoin) Loaded!")
