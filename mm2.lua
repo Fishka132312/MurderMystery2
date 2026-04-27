@@ -1,11 +1,12 @@
 local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/jensonhirst/Orion/main/source')))()
-local Window = OrionLib:MakeWindow({Name = "MeowlSploit", HidePremium = false, SaveConfig = true, ConfigFolder = "MurderMeowlSploit"})
+local Window = OrionLib:MakeWindow({Name = "CoolGui", HidePremium = false, SaveConfig = true, ConfigFolder = "CoolGui"})
 
 local scripts = {
-    '',
+    'Visuals/Esp.lua', 
+    'Visuals/ThingsEsp.lua',
 }
 
-local baseUrl = 'https://raw.githubusercontent.com/Fishka132312/coolgui/refs/heads/main/Things/'
+local baseUrl = 'https://raw.githubusercontent.com/Fishka132312/MurderMystery2/refs/heads/main/Thing'
 
 task.spawn(function()
     for i, scriptName in ipairs(scripts) do
@@ -28,6 +29,145 @@ task.spawn(function()
     end
 end)
 
+local Tab = Window:MakeTab({
+	Name = "Visual",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+
+local Section = Tab:AddSection({
+	Name = "Character Esp"
+})
+
+Tab:AddToggle({
+	Name = "Innocent Esp",
+    Default = false,
+	Callback = function(Value)
+    _G.EspAll = Value
+  	end    
+})
+
+Tab:AddColorpicker({
+    Name = "Innocent Color",
+    Default = Color3.fromRGB(0, 255, 0),
+    Callback = function(Value)
+        _G.ColorInnocent = Value
+    end      
+})
+
+Tab:AddColorpicker({
+    Name = "Dead Color",
+    Default = Color3.fromRGB(255, 255, 255),
+    Callback = function(Value)
+        _G.ColorDead = Value
+    end      
+})
+
+Tab:AddToggle({
+	Name = "Sheriff Esp",
+    Default = false,
+	Callback = function(Value)
+    _G.EspSheriff = Value
+  	end    
+})
+
+Tab:AddColorpicker({
+    Name = "Sheriff Color",
+    Default = Color3.fromRGB(0, 0, 255),
+    Callback = function(Value)
+        _G.ColorSheriff = Value
+    end      
+})
+
+Tab:AddColorpicker({
+    Name = "Hero Color",
+    Default = Color3.fromRGB(255, 255, 0),
+    Callback = function(Value)
+        _G.ColorHero = Value
+    end      
+})
+
+Tab:AddToggle({
+	Name = "Murder Esp",
+    Default = false,
+	Callback = function(Value)
+    _G.EspMurder = Value
+  	end    
+})
+
+Tab:AddColorpicker({
+    Name = "Murder Color",
+    Default = Color3.fromRGB(255, 0, 0),
+    Callback = function(Value)
+        _G.ColorMurderer = Value
+    end      
+})
+
+local Section = Tab:AddSection({
+	Name = "Coin Esp"
+})
+
+Tab:AddToggle({
+    Name = "Coins ESP",
+    Default = false,
+    Callback = function(Value)
+        _G.EspCoins = Value
+    end    
+})
+
+Tab:AddColorpicker({
+    Name = "Coins Color",
+    Default = Color3.fromRGB(255, 215, 0),
+    Callback = function(Value)
+        _G.ColorCoins = Value
+    end      
+})
+
+Tab:AddSlider({
+    Name = "Coin Transparency",
+    Min = 0,
+    Max = 20,
+    Default = 5,
+    Color = Color3.fromRGB(255,255,255),
+    Increment = 1,
+    ValueName = "transparency",
+    Callback = function(Value)
+        _G.CoinTransparency = Value / 20 
+    end    
+})
+
+local Section = Tab:AddSection({
+	Name = "Gun Esp"
+})
+
+Tab:AddToggle({
+    Name = "Dropped Gun ESP",
+    Default = false,
+    Callback = function(Value)
+        _G.EspGun = Value
+    end    
+})
+
+Tab:AddColorpicker({
+    Name = "Gun Color",
+    Default = Color3.fromRGB(255, 150, 0), 
+    Callback = function(Value)
+        _G.ColorGun = Value
+    end      
+})
+
+Tab:AddSlider({
+    Name = "Gun Transparency",
+    Min = 0,
+    Max = 20,
+    Default = 6,
+    Color = Color3.fromRGB(255,255,255),
+    Increment = 1,
+    ValueName = "transparency",
+    Callback = function(Value)
+        _G.GunTransparency = Value / 20 
+    end    
+})
 
 -------------------------Shader---------------------------
 
