@@ -75,7 +75,7 @@ local function UpdateESP(player)
         isEnabled = _G.EspSheriff
         targetColor = ColorSheriff
     elseif role == "Hero" then
-        isEnabled = _G.EspSheriff or _G.EspAll
+        isEnabled = _G.EspSheriff
         targetColor = ColorHero
     else
         isEnabled = _G.EspAll
