@@ -6,80 +6,96 @@ end
 _G.CoinEspRunning = true
 
 -- 2. Настройки (связанные с твоим меню)
+_G.GunTransparency = _G.GunTransparency or 0.3
 _G.EspCoins = (_G.EspCoins ~= nil) and _G.EspCoins or false
 _G.ColorCoins = _G.ColorCoins or Color3.fromRGB(255, 215, 0)
-_G.CoinTransparency = _G.CoinTransparency or 0.3 -- Добавил прозрачность на всякий случай
+_G.CoinTransparency = _G.CoinTransparency or 0.3
+
+-- Настройки для Пистолета
+_G.EspGun = (_G.EspGun ~= nil) and _G.EspGun or false
+_G.ColorGun = _G.ColorGun or Color3.fromRGB(255, 150, 0) -- Оранжевый по дефолту
 
 local CollectionService = game:GetService("CollectionService")
 local CoreGui = game:GetService("CoreGui")
 
-local ESP_STORAGE_NAME = "Coin_Highlights_Storage"
+local ESP_STORAGE_NAME = "MM2_Objects_Storage"
 local Storage = CoreGui:FindFirstChild(ESP_STORAGE_NAME) or Instance.new("Folder", CoreGui)
 Storage.Name = ESP_STORAGE_NAME
 
--- Функция создания обводки (Highlight) на конкретной детали
-local function createHighlight(coinPart, uniqueId)
-    if not coinPart or not coinPart:IsA("BasePart") then return end
-    if Storage:FindFirstChild(uniqueId) then return end
-
+-- Универсальная функция создания подсветки
+local function createHighlight(target, uniqueId, color, transparency)
+    if not target then return end
     local highlight = Instance.new("Highlight")
     highlight.Name = uniqueId
-    highlight.Adornee = coinPart -- Обводит ТОЛЬКО MainCoin
-    highlight.FillColor = _G.ColorCoins
-    highlight.OutlineColor = Color3.new(1, 1, 1) -- Белый контур
-    highlight.FillTransparency = _G.CoinTransparency
-    highlight.OutlineTransparency = 1 -- Контур четкий
+    highlight.Adornee = target
+    highlight.FillColor = color
+    highlight.OutlineColor = Color3.new(1, 1, 1)
+    highlight.FillTransparency = transparency
+    highlight.OutlineTransparency = 0 -- Четкий контур
+    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop -- Видно сквозь стены
     highlight.Parent = Storage
 end
 
--- 4. Основной цикл
+-- Основной цикл
 task.spawn(function()
     while _G.CoinEspRunning do
+        --- ЛОГИКА МОНЕТ ---
         if _G.EspCoins then
-            -- Ищем все объекты с тегом "CoinVisual"
             local coinContainers = CollectionService:GetTagged("CoinVisual")
-            
             for _, container in pairs(coinContainers) do
-                -- Проверка: не собрана ли монета (по твоим атрибутам)
                 local isCollected = container:GetAttribute("Collected") or container:GetAttribute("Delete")
-                
-                -- Находим деталь MainCoin внутри контейнера (как на твоем скриншоте)
                 local mainCoinPart = container:FindFirstChild("MainCoin")
-                
-                if mainCoinPart and not isCollected then
-                    -- Используем ID контейнера, чтобы подсветка не дублировалась
-                    local uniqueId = container:GetDebugId(10)
-                    local existing = Storage:FindFirstChild(uniqueId)
+                local uniqueId = "Coin_" .. container:GetDebugId(10)
 
+                if mainCoinPart and not isCollected then
+                    local existing = Storage:FindFirstChild(uniqueId)
                     if not existing then
-                        createHighlight(mainCoinPart, uniqueId)
+                        createHighlight(mainCoinPart, uniqueId, _G.ColorCoins, _G.CoinTransparency)
                     else
-                        -- Обновление настроек в реальном времени
                         existing.FillColor = _G.ColorCoins
                         existing.FillTransparency = _G.CoinTransparency
-                        existing.Adornee = mainCoinPart -- На всякий случай обновляем Adornee
                     end
                 else
-                    -- Если монета собрана или MainCoin нет — удаляем подсветку
-                    local uniqueId = container:GetDebugId(10)
                     local existing = Storage:FindFirstChild(uniqueId)
                     if existing then existing:Destroy() end
                 end
             end
-            
-            -- Очистка "призрачных" подсветок
-            for _, hl in pairs(Storage:GetChildren()) do
-                if not hl.Adornee or not hl.Adornee.Parent then
-                    hl:Destroy()
+        end
+
+        --- ЛОГИКА ВЫПАВШЕГО ПИСТОЛЕТА ---
+        if _G.EspGun then
+            local droppedGuns = CollectionService:GetTagged("GunDrop")
+            for _, gun in pairs(droppedGuns) do
+                -- Для пистолета используем сам объект или его рукоятку
+                local uniqueId = "Gun_" .. gun:GetDebugId(10)
+                local existing = Storage:FindFirstChild(uniqueId)
+
+                if gun.Parent ~= nil then
+                    if not existing then
+                        createHighlight(gun, uniqueId, _G.ColorGun, _G.GunTransparency)
+                    else
+                        existing.FillColor = _G.ColorGun
+                        existing.FillTransparency = _G.GunTransparency
+                    end
                 end
             end
-        else
-            -- Если ESP выключен в меню — удаляем всё
-            Storage:ClearAllChildren()
         end
-        
-        task.wait(0.5) -- Оптимальная частота проверки
+
+        --- ОБЩАЯ ОЧИСТКА ---
+        for _, hl in pairs(Storage:GetChildren()) do
+            -- Проверяем, включен ли соответствующий ESP
+            local isCoinHl = hl.Name:find("Coin_")
+            local isGunHl = hl.Name:find("Gun_")
+
+            if (isCoinHl and not _G.EspCoins) or (isGunHl and not _G.EspGun) then
+                hl:Destroy()
+            elseif not hl.Adornee or not hl.Adornee.Parent then
+                hl:Destroy()
+            end
+        end
+
+        task.wait(0.5)
     end
 end)
 
-print("Coin Outline ESP (Targeted MainCoin) Loaded!")
+print("MM2 Objects ESP (Coins & Gun) Loaded!")
