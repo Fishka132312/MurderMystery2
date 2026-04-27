@@ -28,7 +28,7 @@ local function createHighlight(coinPart, uniqueId)
     highlight.FillColor = _G.ColorCoins
     highlight.OutlineColor = Color3.new(1, 1, 1) -- Белый контур
     highlight.FillTransparency = _G.CoinTransparency
-    highlight.OutlineTransparency = 0 -- Контур четкий
+    highlight.OutlineTransparency = 1 -- Контур четкий
     highlight.Parent = Storage
 end
 
