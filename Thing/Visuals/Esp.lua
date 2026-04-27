@@ -1,8 +1,8 @@
-local ColorInnocent = Color3.fromRGB(0, 255, 0)
-local ColorSheriff = Color3.fromRGB(0, 0, 255)
-local ColorMurderer = Color3.fromRGB(255, 0, 0)
-local ColorHero = Color3.fromRGB(255, 255, 0)
-local ColorDead = Color3.fromRGB(255, 255, 255)
+_G.ColorInnocent = Color3.fromRGB(0, 255, 0)
+_G.ColorSheriff = Color3.fromRGB(0, 0, 255)
+_G.ColorMurderer = Color3.fromRGB(255, 0, 0)
+_G.ColorHero = Color3.fromRGB(255, 255, 0)
+_G.ColorDead = Color3.fromRGB(255, 255, 255)
 
 _G.EspAll = false
 _G.EspSheriff = false
@@ -63,23 +63,23 @@ local function UpdateESP(player)
 
     local role = GetPlayerRole(player)
     local isEnabled = false
-    local targetColor = ColorInnocent
+    local targetColor = _G.ColorInnocent
 
     if role == "Dead" then
         isEnabled = _G.EspAll
-        targetColor = ColorDead
+        targetColor = _G.ColorDead
     elseif role == "Murderer" then
         isEnabled = _G.EspMurder
-        targetColor = ColorMurderer
+        targetColor = _G.ColorMurderer
     elseif role == "Sheriff" then
         isEnabled = _G.EspSheriff
-        targetColor = ColorSheriff
+        targetColor = _G.ColorSheriff
     elseif role == "Hero" then
         isEnabled = _G.EspSheriff
-        targetColor = ColorHero
+        targetColor = _G.ColorHero
     else
         isEnabled = _G.EspAll
-        targetColor = ColorInnocent
+        targetColor = _G.ColorInnocent
     end
 
     if isEnabled then
