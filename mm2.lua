@@ -1,5 +1,5 @@
 local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/jensonhirst/Orion/main/source')))()
-local Window = OrionLib:MakeWindow({Name = "CoolGui", HidePremium = false, SaveConfig = true, ConfigFolder = "CoolGui"})
+local Window = OrionLib:MakeWindow({Name = "MeowlSploit", HidePremium = false, SaveConfig = true, ConfigFolder = "Mm2MeowlSploit"})
 
 local scripts = {
     'Visuals/Esp.lua', 
